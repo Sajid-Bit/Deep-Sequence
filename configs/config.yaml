@@ -1,0 +1,19 @@
+data_root : Data
+
+data_ingestion:
+  row_data: C:\Users\Sajid\Documents\Deep Sequence\data\raw
+  url_sources: str
+  file_data: 'FB_DL.csv'
+
+
+data_processing:
+  file_path: C:\Users\Sajid\Documents\Deep Sequence\araw\FB_DL.csv
+  window_size: 10
+  target: Date
+  index_colume: Date
+
+
+
+
+prepare_base_model:
+  model_root : C:\Users\Sajid\Documents\Deep Sequence\models
