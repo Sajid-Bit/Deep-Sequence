@@ -1,13 +1,12 @@
-{{cookiecutter.project_name}}
+Deep Sequence
 ==============================
 
-{{cookiecutter.description}}
+## Introduction
+The package includes several deep learning architectures that can be used for time series forecasting.The package provides also several utilities for **Prossing time Series data and Feature Enginering** e.g <br>
 
-Project Organization
-------------
+## Project Organization
 
     ├── LICENSE
-    ├── Makefile           <- Makefile with commands like `make data` or `make train`
     ├── README.md          <- The top-level README for developers using this project.
     ├── data
     │   ├── external       <- Data from third party sources.
@@ -46,12 +45,28 @@ Project Organization
     │   │   ├── predict_model.py
     │   │   └── train_model.py
     │   │
-    │   └── visualization  <- Scripts to create exploratory and results oriented visualizations
-    │       └── visualize.py
-    │
+    │   |── visualization  <- Scripts to create exploratory and results oriented visualizations
+    │   |    └── visualize.py
+    |   |
+    │   |── utils <- Scripts to read and w in and worek with file
+    |   |    └── common.py
+    |   |
+    |   |── constants <- File contains constants of the project
+    |   |
+    |   |── entity <- Scripts to create configuration of all the entity of the project 
+    |   |   └── config_entity.py
+    |   |
+    |   |── pipeline <- Scripts files for the pipeline of prossing, train modeles and testing e.g 
+    |
     └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
 
+## Requirements
 
---------
-
-<p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
+|      lib         |      version |
+|:----------------:|:-----------------:|                     
+|numpy             | 2.2.1      |
+|pandas            | 1.17.0     |
+|tensorflow        | 1.14.0     |
+|keras             | 2.2.4      |
+     
+                  
