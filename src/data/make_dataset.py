@@ -4,6 +4,8 @@ import os
 import gdown
 
 
+# this file to that have the method to download the data from the url or the databases
+
 class DataIngestion:
     def __init__(self, config: DataIngestionConfig):
         self.config = config

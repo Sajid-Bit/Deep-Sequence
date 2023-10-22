@@ -16,3 +16,9 @@ class DataProcessingConfig:
     target: str
     index_colume: str
 
+
+@dataclass(frozen=True)
+class PrepareCallbackConfig:
+    save_path_dir: Path
+    tensorboard_root_log_dir: Path
+    checkpoint_model_filepath: Path

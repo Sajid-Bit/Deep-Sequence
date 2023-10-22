@@ -1,5 +1,6 @@
 from src.entity.config_entity import DataIngestionConfig
 from src.entity.config_entity import DataProcessingConfig
+from src.entity.config_entity import PrepareCallbackConfig
 from src.utils.common import read_yaml
 from src.constants import CONFIG_FILE_PATH
 
@@ -26,5 +27,14 @@ class ConfigurationManager:
             index_colume=configs.index_colume
         )
         return data_processing
+
+    def get_prepare_callback(self) -> PrepareCallbackConfig:
+        config = self.config.prepare_callbacks
+        prepare_callback = PrepareCallbackConfig(
+            save_path_dir=config.root_path_log,
+            tensorboard_root_log_dir=config.tensorboard_root_log_dir,
+            checkpoint_model_filepath=config.checkpoint_model_filepath
+        )
+        return prepare_callback
 
 
