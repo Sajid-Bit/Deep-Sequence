@@ -1,44 +1,11 @@
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
+from tqdm import tqdm
+
 from src.entity.config_entity import DataProcessingConfig
 
 
-def split_data(df, test_split=0.1):
-    n = int(len(df) * test_split)
-
-    train, test = df[:-n], df[-n:]
-    return train, test
-
-
-class Standardize:
-    def __init__(self, split=0.15):
-        self.sigma = None
-        self.mu = None
-        self.split = split
-
-    def _transform(self, df):
-        return (df - self.mu) / self.sigma
-
-    def fit_transform(self, train, test):
-        self.mu = train.mean()
-
-        self.sigma = train.std()
-        train_s = self._transform(train)
-        test_s = self._transform(test)
-        return train_s, test_s
-
-    def transform(self, df):
-        return self._transform(df)
-
-    def inverse(self, df):
-        return (df * self.sigma) + self.mu
-
-    def inverse_y(self, df):
-        return (df * self.sigma[0]) + self.mu[0]
-
-
-class DataProcessing(StandardScaler):
+class DataProcessing:
     def __init__(self, config: DataProcessingConfig):
         self.config = config
         self._data_frame = None
@@ -53,32 +20,66 @@ class DataProcessing(StandardScaler):
         data = pd.read_csv(self.config.file_path, index_col=self.config.index_colume)
         self._data_frame = data[[self.config.target]]
 
-    def simple_split(self, X=None, train_len=None, test_len=None, valid_len=None):
+    def get_data(self):
+        return self._data_frame
+
+    def simple_split(self, test_size=0.1):
+        test_len = int(len(self._data_frame) * test_size)
+        train_len = len(self._data_frame) - test_len
+        val_len = int(test_len * test_size)  # the size of the val take for the test
+
+        return self._data_frame[:train_len], \
+            self._data_frame[train_len:train_len + val_len], \
+            self._data_frame[train_len + val_len:]
+
+    def get_rnn_inputs(self, window_size, horizon,
+                       multivariate_output=False, shuffle=False, other_horizon=None, data=None):
         """
-        Split the data in train-test-validation using the given dimensions for each set.
-        :param X: numpy.array or pandas.DataFrame
-            Univariate data of shape (n_samples, n_features)
-        :param train_len: int
-            Length in number of data points (measurements) for training.
-            If None then allow_muliple_split cannot be True.
-        :param test_len: int
-            Length in number of data points (measurements) for testing
-        :param valid_len: int
-            Length in number of data points (measurements) for validation
-        :return: list
-            train: numpy.array, shape=(train_len, n_features)
-            validation: numpy.array, shape=(valid_len, n_features)
-            test: numpy.array, shape=(test_len, n_features)
+        Prepare data for feeding a RNN model.
+        :param data: numpy.array
+            shape (n_samples, n_features) or (M, n_samples, n_features)
+        :param window_size: int
+            Fixed size of the look-back
+        :param horizon: int
+            Forecasting horizon, the number of future steps that have to be forecasted
+        :param multivariate_output: if True, the target array will not have shape
+            (n_samples, output_sequence_len) but (n_samples, output_sequence_len, n_features)
+        :param shuffle: if True shuffle the data on the first axis
+        :param other_horizon:
+        :return: tuple
+            Return two numpy.arrays: the input and the target for the model.
+            the inputs has shape (n_samples, input_sequence_len, n_features)
+            the target has shape (n_samples, output_sequence_len)
         """
-        if X is None:
-            X = np.array(self._read_data_())  # select the data that pass to the class
-        if test_len is None:
-            raise ValueError('test_len cannot be None.')
-        if train_len is None:
-            train_len = X.shape[0] - test_len
-            valid_len = 0
-        if valid_len is None:
-            valid_len = X.shape[0] - train_len - test_len
-        return X[:train_len], \
-            X[train_len:train_len + valid_len], \
-            X[train_len + valid_len:]
+        if data is None:
+            data = self._data_frame
+        if data.ndim == 2:
+            data = np.expand_dims(data, 0)
+        inputs = []
+        targets = []
+        for X in tqdm(data):  # for each array of shape (n_samples, n_features)
+            n_used_samples = X.shape[0] - horizon - window_size + 1
+            for i in range(n_used_samples):
+                inputs.append(X[i: i + window_size])
+                # TARGET FEATURE SHOULD BE THE FIRST
+                if multivariate_output:
+                    if other_horizon is None:
+                        targets.append(
+                            X[i + window_size: i + window_size + horizon])
+                    else:
+                        targets.append(
+                            X[i + 1: i + window_size + 1])
+                else:
+                    if other_horizon is None:
+                        targets.append(
+                            X[i + window_size: i + window_size + horizon, 0])
+                    else:
+                        targets.append(
+                            X[i + 1: i + window_size + 1, 0])
+        encoder_input_data = np.asarray(inputs)  # (n_samples, sequence_len, n_features)
+        decoder_target_data = np.asarray(
+            targets)  # (n_samples, horizon) or (n_samples, horizon, n_features) if multivariate_output
+        idx = np.arange(encoder_input_data.shape[0])
+        if shuffle:
+            np.random.shuffle(idx)
+        return encoder_input_data[idx], decoder_target_data[idx]
