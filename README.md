@@ -60,13 +60,34 @@ The package includes several deep learning architectures that can be used for ti
     |
     └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
 
-## Requirements
+ 
+## Simple Deep Learning Architectures
+Example of the dataset will be used to test the Architectures is **ETTh1.csv**
+### Example How to Used The RNN Architectures
+```python
+import numpy as np
+from src.models.simple_rnn_models import *
+from src.feature.pre_prossing_data import *
+from src.featuer import *
+# Recurrent_Net class
+""" Recurrent_Net parmter : layers <- the number of the hidden layers
+                            call_type <- type of the call (RMM, LSTM, GRN)
+                            cell_params <- A dictionary containing all the parameters for the RNN cell
+"""
+cell_params = dict(units=30,
+                    activation='tanh',
+                    dropout=0.1,
+                    kernel_regularizer=0.001,
+                    recurrent_regularizer=0.001,
+                    kernel_initializer='lecun_uniform',
+                    recurrent_initializer='lecun_uniform'
+                    )
+lstm_net = Recurrent_Net('lstm', 3, cell_params)
+# Generate synthetic data
+n_features = 10
+X = np.random.uniform(0., 10., size=(10000, n_features))
+data_frame = pd.DataFrame(X, columns=[f'X_{i}' for i in range(1, 11)])
+prossing = ProssingData()
+train_x, train_y = prossing.get_rnn_input()
 
-|      lib         |      version |
-|:----------------:|:-----------------:|                     
-|numpy             | 2.2.1      |
-|pandas            | 1.17.0     |
-|tensorflow        | 1.14.0     |
-|keras             | 2.2.4      |
-     
-                  
+```
