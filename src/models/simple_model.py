@@ -74,7 +74,7 @@ class Recurrent_Net(Recurrent):
         # create the input of the model
         if len(input_shape) < 2:
             input_shape = (input_shape[0], 1)
-        input_layer = Input(shape=input_shape, input='input_layer')
+        input_layer = Input(shape=input_shape, name='input')
         rnn_model = self.rnn(input_layer)
         outputs_layer = Dense(horizon, activation=None)(rnn_model)
 
