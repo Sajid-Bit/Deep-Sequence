@@ -1,8 +1,9 @@
 from src.entity.config_entity import DataIngestionConfig
 from src.entity.config_entity import DataProcessingConfig
 from src.entity.config_entity import PrepareCallbackConfig
+from src.entity.config_entity import TrainModelConfig
 from src.utils.common import read_yaml
-from src.constants import CONFIG_FILE_PATH
+from src.constants import CONFIG_FILE_PATH, PARAM_FILE_PATH
 
 
 class ConfigurationManager:
@@ -28,6 +29,18 @@ class ConfigurationManager:
         )
         return data_processing
 
+    def get_train_model(self) -> TrainModelConfig:
+        configs = self.config.train_model
+        params = read_yaml(PARAM_FILE_PATH)
+        train_model = TrainModelConfig(
+            best_model_path=configs.best_model_path,
+            update_best_model_path=configs.update_model,
+            params_epochs=params.epochs,
+            params_batch_size=params.batch_size
+        )
+
+        return train_model
+
     def get_prepare_callback(self) -> PrepareCallbackConfig:
         config = self.config.prepare_callbacks
         prepare_callback = PrepareCallbackConfig(
@@ -36,5 +49,3 @@ class ConfigurationManager:
             checkpoint_model_filepath=config.checkpoint_model_filepath
         )
         return prepare_callback
-
-

@@ -6,3 +6,4 @@ project_dir = Path().resolve().parents[1]
 
 
 CONFIG_FILE_PATH = project_dir.joinpath('configs/config.yaml')
+PARAM_FILE_PATH = project_dir.joinpath('configs/params.yaml')

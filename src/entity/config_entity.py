@@ -22,3 +22,12 @@ class PrepareCallbackConfig:
     save_path_dir: Path
     tensorboard_root_log_dir: Path
     checkpoint_model_filepath: Path
+
+
+@dataclass(frozen=True)
+class TrainModelConfig:
+    best_model_path: Path
+    update_model: Path
+    params_epochs: int
+    params_batch_size: int
+
