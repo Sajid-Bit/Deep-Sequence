@@ -1,10 +1,5 @@
-# from keras.losses import MeanAbsoluteError
-# from keras.metrics import RootMeanSquaredError
-# from tensorflow import keras
-# from keras.layers import Dense, SimpleRNN, Dropout, LSTM, GRU
-# from sklearn import metrics
 from keras import Model
-from keras.layers import LSTMCell, GRUCell, RNN, SimpleRNNCell, Dense, Input, Flatten, Concatenate
+from keras.layers import LSTMCell, GRUCell, RNN, SimpleRNNCell, Dense, Input
 
 
 # create class to wrapper around the RNN, LSTM and GRU classes

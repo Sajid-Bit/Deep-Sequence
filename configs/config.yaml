@@ -7,11 +7,18 @@ data_ingestion:
 
 
 data_processing:
-  file_path: C:\Users\Sajid\Documents\Deep Sequence\araw\FB_DL.csv
+  file_path: C:\Users\Sajid\Documents\Deep Sequence\data\raw\FB_DL.csv
   window_size: 10
-  target: Date
+  target: Volume
   index_colume: Date
 
+prepare_callbacks:
+  root_path_log: C:\Users\Sajid\Documents\Deep Sequence\
+  tensorboard_root_log_dir: C:\Users\Sajid\Documents\Deep Sequence\log_dir
+  checkpoint_model_filepath: C:\Users\Sajid\Documents\Deep Sequence\models\callbacks
+
+train_model:
+  best_model_path: C:\Users\Sajid\Documents\Deep Sequence\models\best_model
 
 
 

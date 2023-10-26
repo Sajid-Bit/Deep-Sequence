@@ -1,10 +1,11 @@
 from src.config.configuration import ConfigurationManager
 from src.features.pre_prossing_data import DataProcessing
-from src.models.simple_model import Recurrent_Net
+from src.models.simple_rnn_model import Recurrent_Net
 from src.utils.common import read_yaml
 from src.constants import PARAM_FILE_PATH
 from keras.regularizers import l2
 from keras.optimizers import Adam
+from src.utils import metrics
 
 config = ConfigurationManager()
 
@@ -14,15 +15,13 @@ get_data_processing = config.get_data_processing()
 
 processing = DataProcessing(config=get_data_processing)
 
-# train, val, test = processing.simple_split(0.1)
-#
-# train_x, train_y = processing.get_rnn_inputs(window_size=10, horizon=3, data=train)
-# val_x, val_y = processing.get_rnn_inputs(window_size=10, horizon=3, data=val)
-# test_x, test_x = processing.get_rnn_inputs(window_size=10, horizon=3, data=test)
+train, val, test = processing.simple_split(0.1)
 
-# input_shape = (train_x.shape[1], train_x.shape[2])
+train_x, train_y = processing.get_rnn_inputs(window_size=10, horizon=3, data=train)
+val_x, val_y = processing.get_rnn_inputs(window_size=10, horizon=3, data=val)
+test_x, test_y = processing.get_rnn_inputs(window_size=10, horizon=3, data=test)
 
-input_shape = (10, 1)
+input_shape = (train_x.shape[1], train_x.shape[2])
 
 parameter = read_yaml(PARAM_FILE_PATH)
 # get the RNN parameter
@@ -38,7 +37,9 @@ recurrent_net = Recurrent_Net(cell_type='rnn', layers=parameter.recurrent['layer
 
 model = recurrent_net.build_mode(input_shape=input_shape, horizon=3)
 
-model.compile(optimizer=Adam(parameter.recurrent['learning_rate']), loss='mse')
+model.compile(optimizer=Adam(parameter.recurrent['learning_rate']), loss='mse', metrics=metrics)
 
-print(model.summary())
+model.fit(train_x, train_y, validation_data=(val_x, val_y), epochs=10)
 
+pred = model.predict(test_x)
+print(pred)

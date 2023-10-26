@@ -50,7 +50,7 @@ class DataProcessing:
         :param other_horizon:
         :return: tuple
             Return two numpy.arrays: the input and the target for the model.
-            the inputs has shape (n_samples, input_sequence_len, n_features)
+            the inputs have shape (n_samples, input_sequence_len, n_features)
             the target has shape (n_samples, output_sequence_len)
         """
         if data is None:

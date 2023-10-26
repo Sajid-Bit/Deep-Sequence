@@ -1,0 +1,14 @@
+glob_config:
+  epochs: 10
+  batch_size: 32
+
+
+recurrent:
+  epochs: 10
+  batch_size: 64
+  dropout: 0.1
+  layers: 2
+  units: 30
+  learning_rate: 0.001
+  l2: 0.001
+
