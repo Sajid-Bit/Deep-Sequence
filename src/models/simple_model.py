@@ -1,74 +1,94 @@
-from keras.losses import MeanAbsoluteError
-from keras.metrics import RootMeanSquaredError
-from tensorflow import keras
-from keras.layers import Dense, SimpleRNN, Dropout, LSTM, GRU
-from sklearn import metrics
-import tensorflow as tf
-from tensorflow.keras import Sequential
+# from keras.losses import MeanAbsoluteError
+# from keras.metrics import RootMeanSquaredError
+# from tensorflow import keras
+# from keras.layers import Dense, SimpleRNN, Dropout, LSTM, GRU
+# from sklearn import metrics
+from keras import Model
+from keras.layers import LSTMCell, GRUCell, RNN, SimpleRNNCell, Dense, Input, Flatten, Concatenate
 
 
-class Train:
-    def __init__(self, input_shape, epochs=700, patience=50, batch_size=64):
-        self.epochs = epochs
-        self.patience = patience
-        self.batch_size = batch_size
-        self.INPUT_SHAPE = input_shape
+# create class to wrapper around the RNN, LSTM and GRU classes
+# Build the rnn with the given number of layers.
 
-    def simpleRNN(self, units, dropout=0.1):
-        # simpleRNN
-        model = tf.keras.models.Sequential(
-            [SimpleRNN(units=units, return_sequences=False, input_shape=self.INPUT_SHAPE),
-             tf.keras.layers.Dropout(dropout),
-             tf.keras.layers.Dense(1)
-             ])
+class Recurrent:
+    def __init__(self, layers, cell_type, cell_params):
+        """
+        layers: list <- the number of the of hidden neurons for the i-th layer
+        cell_type: str <- lstm, rnn, grn
+        cell_params: dict <- A dictionary containing all the parameters for the RNN cell
+        """
+        self.mode = None
+        self.horizon = None
+        self.layers = layers
+        self.cell_params = cell_params
+        if cell_type == 'lstm':
+            self.cell = LSTMCell
+        elif cell_type == 'gru':
+            self.cell = GRUCell
+        elif cell_type == 'rnn':
+            self.cell = SimpleRNNCell
+        else:
+            raise NotImplementedError('{0} is not a valid cell type.'.format(cell_type))
+        # Build deep rnn
+        self.rnn = self._build_()
 
-        return model
+    # build the RNN model
 
-    def deep_RNN(self, units, dropout=0.1):
-        deep_RNN = tf.keras.models.Sequential([
-            tf.keras.layers.SimpleRNN(units=units, return_sequences=True, input_shape=self.INPUT_SHAPE),
-            tf.keras.layers.Dropout(dropout),
-            tf.keras.layers.SimpleRNN(units=units, return_sequences=False),
-            tf.keras.layers.Dropout(dropout),
-            tf.keras.layers.Dense(1)
-        ])
+    def _build_(self):
+        cells = []
+        for _ in range(self.layers):
+            cells.append(self.cell(**self.cell_params))
 
-        return deep_RNN
+        # create the RNN
+        deep_rnn = RNN(cells, return_sequences=False, return_state=False)
 
-    def train_model(self, model, x_train, y_train, x_val, y_val):
-        model.compile(optimizer='adam',
-                      loss='mean_squared_error',
-                      metrics=[RootMeanSquaredError(),
-                               MeanAbsoluteError()])
+        return deep_rnn
 
-        es = tf.keras.callbacks.EarlyStopping(monitor="val_loss", min_delta=0, patience=self.patience)
+    def build_mode(self):
+        pass
 
-        history = model.fit(x_train, y_train,
-                            shuffle=False, epochs=self.epochs,
-                            batch_size=self.batch_size,
-                            validation_data=(x_val, y_val),
-                            callbacks=[es], verbose=1)
+    def predict(self, inputs):
+        pass
 
-        return history
+    def evaluate(self):
+        pass
 
-    @staticmethod
-    def deepNN(input_shape):
-        # Build the model
-        model_baseline = tf.keras.models.Sequential([
-            tf.keras.layers.Dense(64, input_shape=[input_shape], activation="relu"),
-            tf.keras.layers.Dense(32, activation="relu"),
-            tf.keras.layers.Dense(1)
-        ])
 
-        return model_baseline
+class Recurrent_Net(Recurrent):
+    """
+    Create Recurrent using Multiple Input Multiple Output
+    """
 
-    def simple_LSTM(self, input_shape):
-        model_tune = tf.keras.models.Sequential([
-            tf.keras.layers.Lambda(lambda x: tf.expand_dims(x, axis=-1),
-                                   input_shape=[input_shape]),
-            tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(32, return_sequences=True, input_shape=[input_shape])),
-            tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(32)),
-            tf.keras.layers.Dense(1)
-        ])
+    def build_mode(self, input_shape, horizon):
+        """
+        Create the model with take
+        input_shape <- (window_size, n_feature)
+        horizon <- int the forecasting step
+        The input of the model is :
+            - 3D Tensor the shape of the input (batch_size, window_size, n_feature)
+        The outputs of the model is:
+            -2D Tensor the shape of the output is (batch_size, num_steps)
+        """
 
-        return model_tune
+        self.horizon = horizon
+        # create the input of the model
+        if len(input_shape) < 2:
+            input_shape = (input_shape[0], 1)
+        input_layer = Input(shape=input_shape, input='input_layer')
+        rnn_model = self.rnn(input_layer)
+        outputs_layer = Dense(horizon, activation=None)(rnn_model)
+
+        self.mode = Model(inputs=[input_layer], outputs=[outputs_layer])
+
+        return self.mode
+
+    def predict(self, inputs):
+        """
+        input <- numpy array (batch_size, window_size, n_feature)
+        Return:
+            - 2D Tensor (batch_size, horizon)
+        """
+        return self.mode.predict(inputs)
+
+
+

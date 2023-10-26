@@ -1,6 +1,6 @@
 from src.config.configuration import ConfigurationManager
 from src.features.pre_prossing_data import DataProcessing
-from src.models.predict_model import Train
+from src.models.simple_model import Recurrent_Net
 
 config = ConfigurationManager()
 
@@ -20,8 +20,4 @@ test_x, test_x = processing.get_rnn_inputs(window_size=10, horizon=3, data=test)
 
 input_shape = (train_x.shape[1], train_x.shape[2])
 
-train_model = Train(input_shape=input_shape, epochs=10)
-
-simple_Rnn = train_model.simpleRNN(units=30)
-
-mode = train_model.train_model(simple_Rnn, train_x, train_y, val_x, val_y)
+recurrent_net = Recurrent_Net(input_shape=input_shape, horizone=3, layers=[30, 20, 10], cell_type='lstm', )
