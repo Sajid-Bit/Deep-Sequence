@@ -10,10 +10,12 @@ from keras.regularizers import l2
 from keras.metrics import get
 import tensorflow as tf
 
+
 class Seq2Seq:
     def __init__(self, encoder_layers,
                  decoder_layers,
                  output_sequence_length,
+                 units=30,
                  dropout=0.0,
                  l2=0.01,
                  cell_type='lstm'):
@@ -23,21 +25,19 @@ class Seq2Seq:
         self.encoder_layers = encoder_layers
         self.l2 = l2
         self._cell_type = cell_type
-
+        self._units = None
+        self.cell = self._cell_()
         self.models = None
 
-        # RNN with the layer of cells
-        def cell():
-            if self.__cell_type == "LSTM":
-                cell = tf.nn.rnn_cell.LSTMCell()
-            elif self.__cell_type == "GRU":
-                cell = tf.nn.rnn_cell.GRUCell()
-            elif self.__cell_type == "RNN":
-                cell = tf.nn.rnn_cell.BasicRNNCell()
-            return cell
+    # RNN with the layer of cells
+    def _cell_(self):
+        if self.__cell_type == "LSTM":
+            cell = tf.nn.rnn_cell.LSTMCell()
+        elif self.__cell_type == "GRU":
+            cell = tf.nn.rnn_cell.GRUCell()
+        elif self.__cell_type == "RNN":
+            cell = tf.nn.rnn_cell.BasicRNNCell()
+        return cell
 
-            return cell
-
-
-
-
+    def bulid_model(self, units=30):
+        pass
