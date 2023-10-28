@@ -31,6 +31,9 @@ class Seq2Seq:
         else:
             raise ValueError('{0} is not a valid cell type. Choose between gru and lstm.'.format(cell_type))
 
+        self.encoder = self._build_encoder_()
+        self.decoder = self._build_decoder_()
+
     def _build_encoder(self):
         # create the encoder layers by stacked RNN layers
 
@@ -42,3 +45,24 @@ class Seq2Seq:
                                      recurrent_regularizer=l2(self.l2)))
 
         return RNN(encoder, return_state=True, name='encoder-layers')
+
+    def _build_decoder_(self):
+        # create decoder the decoder layers
+
+        decoder = []
+        for n_neurons in self._decoder_layers:
+            decoder.append(self.cell(units=n_neurons,
+                                     dropout=self.dropout,
+                                     kernel_regularizer=l2(self.l2),
+                                     recurrent_regularizer=l2(self.l2)))
+
+        return RNN(decoder, return_state=True, return_sequences=True, name="decoder-layers")
+
+    def _get_decoder_states(self):
+        """
+        get the status of the decoder as Input layers
+        """
+        decoder_inputs = []  # the input status of the decoder
+        for unit in self._encoder_layers:
+            # take the h status as input lays
+            decoder_state_input_h = Input(shape=(unit,))
